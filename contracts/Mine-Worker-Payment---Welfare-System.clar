@@ -9,6 +9,7 @@
 (define-data-var contract-owner principal tx-sender)
 (define-data-var insurance-rate uint u3)
 (define-data-var payment-period uint u144)
+(define-data-var retirement-rate uint u5)
 
 (define-map workers
     { worker: principal }
@@ -16,9 +17,11 @@
         hourly-rate: uint,
         hours-worked: uint,
         insurance-enabled: bool,
+        retirement-enabled: bool,
         last-payment-block: uint,
         total-earned: uint,
-        insurance-balance: uint
+        insurance-balance: uint,
+        retirement-balance: uint
     }
 )
 
@@ -27,6 +30,7 @@
     {
         gross-amount: uint,
         insurance-deduction: uint,
+        retirement-deduction: uint,
         net-amount: uint,
         payment-block: uint,
         payment-hash: (buff 32)
@@ -64,11 +68,16 @@
                     (/ (* gross-pay (var-get insurance-rate)) u100)
                     u0
                 ))
-                (net-pay (- gross-pay insurance-deduction))
+                (retirement-deduction (if (get retirement-enabled worker-data)
+                    (/ (* gross-pay (var-get retirement-rate)) u100)
+                    u0
+                ))
+                (net-pay (- gross-pay (+ insurance-deduction retirement-deduction)))
             )
             (some {
                 gross-amount: gross-pay,
                 insurance-deduction: insurance-deduction,
+                retirement-deduction: retirement-deduction,
                 net-amount: net-pay
             })
         )
@@ -84,7 +93,7 @@
     )
 )
 
-(define-public (register-worker (worker principal) (hourly-rate uint) (insurance-enabled bool))
+(define-public (register-worker (worker principal) (hourly-rate uint) (insurance-enabled bool) (retirement-enabled bool))
     (begin
         (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
         (asserts! (> hourly-rate u0) ERR_INVALID_AMOUNT)
@@ -94,9 +103,11 @@
                 hourly-rate: hourly-rate,
                 hours-worked: u0,
                 insurance-enabled: insurance-enabled,
+                retirement-enabled: retirement-enabled,
                 last-payment-block: burn-block-height,
                 total-earned: u0,
-                insurance-balance: u0
+                insurance-balance: u0,
+                retirement-balance: u0
             }
         ))
     )
@@ -160,7 +171,8 @@
                     hours-worked: u0,
                     last-payment-block: burn-block-height,
                     total-earned: (+ (get total-earned worker-data) (get gross-amount payment-calculation)),
-                    insurance-balance: (+ (get insurance-balance worker-data) (get insurance-deduction payment-calculation))
+                    insurance-balance: (+ (get insurance-balance worker-data) (get insurance-deduction payment-calculation)),
+                    retirement-balance: (+ (get retirement-balance worker-data) (get retirement-deduction payment-calculation))
                 })
             )
             
@@ -169,6 +181,7 @@
                 {
                     gross-amount: (get gross-amount payment-calculation),
                     insurance-deduction: (get insurance-deduction payment-calculation),
+                    retirement-deduction: (get retirement-deduction payment-calculation),
                     net-amount: (get net-amount payment-calculation),
                     payment-block: burn-block-height,
                     payment-hash: (sha256 (concat (unwrap-panic (to-consensus-buff? worker)) (unwrap-panic (to-consensus-buff? burn-block-height))))
@@ -208,11 +221,42 @@
     )
 )
 
+(define-public (withdraw-retirement (worker principal) (amount uint))
+    (let
+        (
+            (worker-data (unwrap! (map-get? workers { worker: worker }) ERR_WORKER_NOT_FOUND))
+        )
+        (begin
+            (asserts! (is-eq tx-sender worker) ERR_UNAUTHORIZED)
+            (asserts! (get retirement-enabled worker-data) ERR_INSURANCE_NOT_ENABLED)
+            (asserts! (>= (get retirement-balance worker-data) amount) ERR_INSUFFICIENT_FUNDS)
+            (asserts! (> amount u0) ERR_INVALID_AMOUNT)
+            
+            (try! (as-contract (stx-transfer? amount tx-sender worker)))
+            
+            (ok (map-set workers
+                { worker: worker }
+                (merge worker-data {
+                    retirement-balance: (- (get retirement-balance worker-data) amount)
+                })
+            ))
+        )
+    )
+)
+
 (define-public (update-insurance-rate (new-rate uint))
     (begin
         (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
         (asserts! (<= new-rate u10) ERR_INVALID_AMOUNT)
         (ok (var-set insurance-rate new-rate))
+    )
+)
+
+(define-public (update-retirement-rate (new-rate uint))
+    (begin
+        (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+        (asserts! (<= new-rate u10) ERR_INVALID_AMOUNT)
+        (ok (var-set retirement-rate new-rate))
     )
 )
 
@@ -252,6 +296,10 @@
     (var-get insurance-rate)
 )
 
+(define-read-only (get-retirement-rate)
+    (var-get retirement-rate)
+)
+
 (define-read-only (get-current-period)
     (/ burn-block-height (var-get payment-period))
 )
@@ -262,6 +310,7 @@
         (some {
             total-payments: (get total-earned worker-data),
             insurance-contributions: (get insurance-balance worker-data),
+            retirement-contributions: (get retirement-balance worker-data),
             current-hours: (get hours-worked worker-data),
             next-payment-due: (+ (get last-payment-block worker-data) (var-get payment-period))
         })

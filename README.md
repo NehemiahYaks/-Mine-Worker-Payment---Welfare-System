@@ -1,5 +1,3 @@
-# ⛏️ Mine Worker Payment & Welfare System
-
 A blockchain-based payroll system ensuring fair, timely, and transparent wage distribution for mine workers using Stacks smart contracts.
 
 ## 🚀 Features
@@ -7,13 +5,14 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - 💰 **Automated Payments**: Scheduled wage distribution based on configurable periods
 - 📋 **On-chain Receipts**: Immutable payment records stored on blockchain
 - 🛡️ **Micro-insurance**: Optional deductions for worker welfare fund
+- 🏦 **Retirement Savings**: Optional contributions for long-term financial security
 - 📊 **Worker Statistics**: Track earnings, hours, and payment history
 - 🔒 **Secure & Transparent**: All transactions verifiable on-chain
 
 ## 🏗️ Contract Functions
 
 ### 👷 Worker Management
-- `register-worker` - Register new worker with hourly rate and insurance preference
+- `register-worker` - Register new worker with hourly rate, insurance, and retirement preferences
 - `update-worker-hours` - Update worked hours for payment calculation
 - `get-worker-info` - View worker details and current status
 
@@ -32,8 +31,13 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - `update-insurance-rate` - Adjust insurance deduction percentage
 - `get-insurance-rate` - View current insurance rate
 
+### 🏦 Retirement & Savings
+- `withdraw-retirement` - Workers can access their retirement balance
+- `update-retirement-rate` - Adjust retirement contribution percentage
+- `get-retirement-rate` - View current retirement rate
+
 ### 📈 Analytics & Reporting
-- `get-worker-statistics` - Comprehensive worker payment data
+- `get-worker-statistics` - Comprehensive worker payment, insurance, and retirement data
 - `get-payment-receipt` - Individual payment record lookup
 - `get-all-worker-payments` - Historical payment range query
 
@@ -44,14 +48,16 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 2. Contract deployer becomes owner automatically
 3. Set payment period (default: 144 blocks ≈ 24 hours)
 4. Set insurance rate (default: 3%)
+5. Set retirement rate (default: 5%)
 
 ### Register Workers
 ```clarity
-(contract-call? .mine-worker-payment register-worker 'SP1... u50 true)
+(contract-call? .mine-worker-payment register-worker 'SP1... u50 true true)
 ```
 - Worker address
 - Hourly rate in micro-STX
 - Insurance enrollment (true/false)
+- Retirement enrollment (true/false)
 
 ### Process Payroll
 ```clarity
@@ -79,11 +85,13 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 4. **Payment**: Automatic/manual payment processing
 5. **Receipt**: On-chain payment record created
 6. **Insurance**: Optional deductions accumulated for welfare
+7. **Retirement**: Optional contributions saved for long-term security
 
 ## 🔧 Configuration
 
 - **Payment Period**: Configurable block intervals (default: 144 blocks)
 - **Insurance Rate**: Percentage deduction (default: 3%, max: 10%)
+- **Retirement Rate**: Percentage deduction (default: 5%, max: 10%)
 - **Batch Size**: Up to 50 workers per batch payment
 
 ## 🔐 Security Features
@@ -91,7 +99,7 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - Owner-only administrative functions
 - Payment duplication prevention
 - Balance validation before transfers
-- Insurance withdrawal restrictions
+- Insurance and retirement withdrawal restrictions
 - Emergency fund recovery
 
 ## 📊 Data Structures
@@ -100,11 +108,13 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 ```clarity
 {
   hourly-rate: uint,
-  hours-worked: uint, 
+  hours-worked: uint,
   insurance-enabled: bool,
+  retirement-enabled: bool,
   last-payment-block: uint,
   total-earned: uint,
-  insurance-balance: uint
+  insurance-balance: uint,
+  retirement-balance: uint
 }
 ```
 
@@ -113,6 +123,7 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 {
   gross-amount: uint,
   insurance-deduction: uint,
+  retirement-deduction: uint,
   net-amount: uint,
   payment-block: uint,
   payment-hash: (buff 32)
@@ -129,8 +140,8 @@ clarinet test
 ## 📈 Benefits
 
 - ✅ **Transparency**: All payments publicly verifiable
-- ✅ **Reliability**: Blockchain-enforced payment schedules  
+- ✅ **Reliability**: Blockchain-enforced payment schedules
 - ✅ **Security**: Cryptographic payment receipts
 - ✅ **Efficiency**: Batch processing capabilities
 - ✅ **Welfare**: Built-in insurance system
-- ✅ **Auditability**: Complete payment history on-chain
+- ✅ **Retirement Planning**: Optional long-term savings for workers
