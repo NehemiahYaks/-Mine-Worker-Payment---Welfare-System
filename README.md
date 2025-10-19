@@ -8,6 +8,7 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - 🏦 **Retirement Savings**: Optional contributions for long-term financial security
 - 📊 **Worker Statistics**: Track earnings, hours, and payment history
 - 🔒 **Secure & Transparent**: All transactions verifiable on-chain
+- 🎉 **Performance Bonuses**: Award additional incentives to workers for outstanding performance
 
 ## 🏗️ Contract Functions
 
@@ -25,6 +26,7 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - `deposit-funds` - Add STX to contract for payments
 - `emergency-withdraw-funds` - Withdraw unused funds (owner only)
 - `get-employer-balance` - Check available balance
+- `award-bonus` - Grant performance bonuses to workers
 
 ### 🛡️ Insurance & Welfare
 - `withdraw-insurance` - Workers can access their insurance balance
@@ -75,6 +77,9 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 ```clarity
 ;; Employer deposits STX for payroll
 (contract-call? .mine-worker-payment deposit-funds u1000000)
+
+;; Award bonus to worker
+(contract-call? .mine-worker-payment award-bonus 'SP1... u50000)
 ```
 
 ## 📋 Payment Flow

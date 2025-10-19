@@ -277,12 +277,40 @@
             (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
             (asserts! (>= employer-balance amount) ERR_INSUFFICIENT_FUNDS)
             (asserts! (> amount u0) ERR_INVALID_AMOUNT)
-            
+
             (try! (as-contract (stx-transfer? amount tx-sender (var-get contract-owner))))
-            
+
             (ok (map-set employer-balances
                 { employer: tx-sender }
                 { balance: (- employer-balance amount) }
+            ))
+        )
+    )
+)
+
+(define-public (award-bonus (worker principal) (amount uint))
+    (let
+        (
+            (worker-data (unwrap! (map-get? workers { worker: worker }) ERR_WORKER_NOT_FOUND))
+            (employer-balance (get-employer-balance tx-sender))
+        )
+        (begin
+            (asserts! (is-eq tx-sender (var-get contract-owner)) ERR_UNAUTHORIZED)
+            (asserts! (> amount u0) ERR_INVALID_AMOUNT)
+            (asserts! (>= employer-balance amount) ERR_INSUFFICIENT_FUNDS)
+
+            (try! (as-contract (stx-transfer? amount tx-sender worker)))
+
+            (map-set employer-balances
+                { employer: tx-sender }
+                { balance: (- employer-balance amount) }
+            )
+
+            (ok (map-set workers
+                { worker: worker }
+                (merge worker-data {
+                    total-earned: (+ (get total-earned worker-data) amount)
+                })
             ))
         )
     )
