@@ -42,6 +42,19 @@
     { balance: uint }
 )
 
+(define-data-var total-feedback-count uint u0)
+
+(define-map worker-feedback
+    { feedback-id: uint }
+    {
+        worker: principal,
+        feedback-type: (string-ascii 20),
+        message: (string-ascii 500),
+        submitted-block: uint,
+        is-anonymous: bool
+    }
+)
+
 (define-read-only (get-contract-owner)
     (var-get contract-owner)
 )
@@ -356,4 +369,31 @@
             none
         )
     )
+)
+
+(define-public (submit-worker-feedback (feedback-type (string-ascii 20)) (message (string-ascii 500)) (anonymous bool))
+    (let
+        (
+            (feedback-id (var-get total-feedback-count))
+        )
+        (begin
+            (asserts! (is-some (map-get? workers { worker: tx-sender })) ERR_WORKER_NOT_FOUND)
+            (asserts! (> (len message) u0) ERR_INVALID_AMOUNT)
+            (var-set total-feedback-count (+ feedback-id u1))
+            (ok (map-set worker-feedback
+                { feedback-id: feedback-id }
+                {
+                    worker: (if anonymous (var-get contract-owner) tx-sender),
+                    feedback-type: feedback-type,
+                    message: message,
+                    submitted-block: burn-block-height,
+                    is-anonymous: anonymous
+                }
+            ))
+        )
+    )
+)
+
+(define-read-only (get-feedback-count)
+    (var-get total-feedback-count)
 )

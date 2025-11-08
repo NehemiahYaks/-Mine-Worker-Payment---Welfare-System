@@ -41,6 +41,8 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 ### 📈 Analytics & Reporting
 - `get-worker-statistics` - Comprehensive worker payment, insurance, and retirement data
 - `get-payment-receipt` - Individual payment record lookup
+- `submit-worker-feedback` - Workers can anonymously submit feedback on workplace conditions
+- `get-feedback-count` - View total feedback submissions for transparency
 - `get-all-worker-payments` - Historical payment range query
 
 ## 🛠️ Usage
@@ -149,4 +151,5 @@ clarinet test
 - ✅ **Security**: Cryptographic payment receipts
 - ✅ **Efficiency**: Batch processing capabilities
 - ✅ **Welfare**: Built-in insurance system
+- 🚀 **Worker Feedback System**: Enables workers to submit anonymous feedback on workplace conditions, fostering continuous improvement and accountability in mining operations. #WorkerVoice #MiningSafety
 - ✅ **Retirement Planning**: Optional long-term savings for workers
