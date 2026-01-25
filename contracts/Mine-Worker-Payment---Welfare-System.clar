@@ -6,24 +6,27 @@
 (define-constant ERR_INVALID_PERIOD (err u105))
 (define-constant ERR_INSURANCE_NOT_ENABLED (err u106))
 
+(define-constant ERR_WORKER_SUSPENDED (err u107))
+(define-constant ERR_RETIREMENT_NOT_ENABLED (err u108))
+
 (define-data-var contract-owner principal tx-sender)
 (define-data-var insurance-rate uint u3)
 (define-data-var payment-period uint u144)
 (define-data-var retirement-rate uint u5)
 
 (define-map workers
-    { worker: principal }
-    {
-        hourly-rate: uint,
-        hours-worked: uint,
-        insurance-enabled: bool,
-        retirement-enabled: bool,
-        last-payment-block: uint,
-        total-earned: uint,
-        insurance-balance: uint,
-        retirement-balance: uint
-    }
-)
+     { worker: principal }
+     {
+         hourly-rate: uint,
+         hours-worked: uint,
+         insurance-enabled: bool,
+         retirement-enabled: bool,
+         last-payment-block: uint,
+         total-earned: uint,
+         insurance-balance: uint,
+         retirement-balance: uint
+     }
+ )
 
 (define-map payment-receipts
     { worker: principal, period: uint }
@@ -241,7 +244,7 @@
         )
         (begin
             (asserts! (is-eq tx-sender worker) ERR_UNAUTHORIZED)
-            (asserts! (get retirement-enabled worker-data) ERR_INSURANCE_NOT_ENABLED)
+            (asserts! (get retirement-enabled worker-data) ERR_RETIREMENT_NOT_ENABLED)
             (asserts! (>= (get retirement-balance worker-data) amount) ERR_INSUFFICIENT_FUNDS)
             (asserts! (> amount u0) ERR_INVALID_AMOUNT)
             

@@ -9,6 +9,7 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - 📊 **Worker Statistics**: Track earnings, hours, and payment history
 - 🔒 **Secure & Transparent**: All transactions verifiable on-chain
 - 🎉 **Performance Bonuses**: Award additional incentives to workers for outstanding performance
+- 🚫 **Worker Suspension**: Temporarily halt payments for disciplinary actions
 
 ## 🏗️ Contract Functions
 
@@ -16,6 +17,10 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - `register-worker` - Register new worker with hourly rate, insurance, and retirement preferences
 - `update-worker-hours` - Update worked hours for payment calculation
 - `get-worker-info` - View worker details and current status
+
+- `suspend-worker` - Suspend worker from receiving payments
+
+- `unsuspend-worker` - Restore worker payment eligibility
 
 ### 💸 Payment Processing
 - `process-payment` - Execute individual worker payment
@@ -108,6 +113,8 @@ A blockchain-based payroll system ensuring fair, timely, and transparent wage di
 - Balance validation before transfers
 - Insurance and retirement withdrawal restrictions
 - Emergency fund recovery
+
+- Worker suspension mechanism for operational control
 
 ## 📊 Data Structures
 
